@@ -162,3 +162,11 @@ file { "/etc/vsftpd/vsftpd.conf":
       require => Package["vsftpd"],
       source => "puppet:///files/etc/vsftpd/vsftpd.conf";
 }
+
+user { web:
+  ensure => present,
+  comment => "$name",
+  home    => "/var/www/html",
+  shell   => "/sbin/nologin",
+  groups => 'apache'
+}
