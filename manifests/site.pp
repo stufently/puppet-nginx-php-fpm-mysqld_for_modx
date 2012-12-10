@@ -1,6 +1,4 @@
 
-
-
 yumrepo { "epel":
         enabled => 1,
         gpgcheck => 0
@@ -73,6 +71,10 @@ package {"nginx":
         ensure => latest,
 }
 
+package {"vsftpd":
+        ensure => latest,
+}
+
 service { "nginx":
       ensure     => running,
       enable     => true,
@@ -81,14 +83,22 @@ service { "nginx":
       subscribe  => [File["/etc/nginx/nginx.conf"],File["/etc/nginx/conf.d/default.conf"]];
 }
 
+service { "vsftpd":
+      ensure     => running,
+      enable     => true,
+      hasrestart => true,
+      require    => [Package['vsftpd'],File['/etc/vsftpd/vsftpd.conf']],
+      subscribe  => [File["/etc/vsftpd/vsftpd.conf"]];
+}
+
 
 
 service { "php-fpm":
       ensure     => running,
       enable     => true,
       hasrestart => true,
-      require    => [Package['php-fpm'],File['/etc/php-fpm.conf']],
-      subscribe  => [File["/etc/php-fpm.conf"],File["/etc/php-fpm.d/www.conf"]];
+      require    => [Package['php-fpm'],File['/etc/php-fpm.conf'],File['/etc/php.ini']],
+      subscribe  => [File["/etc/php-fpm.conf"],File["/etc/php-fpm.d/www.conf"],File['/etc/php.ini']];
 }
 
 service { "mysqld":
@@ -138,4 +148,17 @@ file { "/etc/php.d/apc.ini":
       ensure => present,
       require => Package["php-pecl-apc"],
       source => "puppet:///files/etc/php.d/apc.ini";
+}
+
+file { "/etc/php.ini":
+      ensure => present,
+      require => Package["php"],
+      source => "puppet:///files/etc/php.ini";
+}
+
+
+file { "/etc/vsftpd/vsftpd.conf":
+      ensure => present,
+      require => Package["vsftpd"],
+      source => "puppet:///files/etc/vsftpd/vsftpd.conf";
 }
